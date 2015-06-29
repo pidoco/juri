@@ -1,0 +1,26 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Known text files
+*.java text
+*.rb text
+*.xml text
+*.yml text
+*.json text
+*.md text
+*.sh text
+*.css text
+*.less text
+*.stylus text
+*.txt text
+*.bat text
+*.js text
+
+# Known binary files
+*.jar binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.tgz binary
+*.bz2 binary
+

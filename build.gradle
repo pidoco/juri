@@ -1,0 +1,45 @@
+apply plugin: 'java'
+
+group = 'com.pidoco'
+// in settings: name
+version = '0.1-SNAPSHOT'
+description = 'URI manipulation made easy: new JURI(uri).replaceQueryParameter("query", "my next query").toString()'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    
+    compile 'org.slf4j:slf4j-api:1.7.5'
+    compile 'com.google.code.findbugs:jsr305:2.0.0'
+    
+    compile 'com.google.guava:guava:18.0' // for URI element-specific escapers
+    compile 'org.apache.commons:commons-lang3:3.3.2' // using this for null checks, common string modifications etc
+    
+    testCompile 'junit:junit:4.11'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+apply plugin: 'maven-publish'
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            
+            artifact sourceJar {
+                classifier "sources"
+            }
+        }
+    }
+}
+
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
