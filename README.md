@@ -43,6 +43,7 @@ JURI.parse(uri)
     .setPort(port)
     .addPathSegment(directory)
     .addQueryParameter(key, value)
+    .replaceQueryParameter(key, value)
     .setFragment()
     .toString();
 ```
@@ -64,6 +65,12 @@ uri.addPathSegment("sub%20dir")
 uri.getRawPath() // -> "blah/blub/sub%20dir"
 uri.getPath() // -> "blah/blub/sub dir"
 ```
+
+Completely free (MIT license)
+-----------------------------
+
+No need to worry about including the list of authors in your software product.
+
 
 Dependencies
 ------------
