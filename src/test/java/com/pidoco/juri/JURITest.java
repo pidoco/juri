@@ -632,4 +632,15 @@ public class JURITest {
         assertNull(
                 JURI.parse("blah").getScheme());
     }
+    
+    @Test
+    public void testNavigate() {
+    	cut = JURI.parse("/a/b/c/d/e/f");
+    	assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
+    	assertEquals("/a/b.html", cut.clone().navigate("/a/b.html").getPath());
+        assertEquals("/a/b/c/d/e/g.html", cut.clone().navigate( "g.html").getPath());
+        assertEquals("/a/b/c/c/h", cut.clone().navigate("../../c/h").getPath());
+        assertEquals("/a/b/c/d/c.html", cut.clone().navigate("../c.html").getPath());
+        assertEquals("/a/b/c/d/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+    }
 }
