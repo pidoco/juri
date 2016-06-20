@@ -642,5 +642,19 @@ public class JURITest {
         assertEquals("/a/b/c/c/h", cut.clone().navigate("../../c/h").getPath());
         assertEquals("/a/b/c/d/c.html", cut.clone().navigate("../c.html").getPath());
         assertEquals("/a/b/c/d/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        cut = JURI.parse("http://example.com//a/b/c/d/e/f");
+        assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
+    	assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
+        assertEquals("http://example.com/a/b/c/d/e/g.html", cut.clone().navigate( "g.html").toString());
+        assertEquals("http://example.com/a/b/c/c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://example.com/a/b/c/d/c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/a/b/c/d/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        cut = JURI.parse("http://examp/e.com");
+        assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
+    	assertEquals("http://examp/a/b.html", cut.clone().navigate("/a/b.html").toString());
+        assertEquals("http://examp/g.html", cut.clone().navigate( "g.html").toString());
+        assertEquals("http://examp/../../c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://examp/../c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://examp/../c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
     }
 }

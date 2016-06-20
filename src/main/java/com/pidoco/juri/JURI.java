@@ -987,7 +987,8 @@ public class JURI implements Cloneable {
     		params = Splitter.on("&").withKeyValueSeparator("=").split(fragments[1]);
     	}
     	if(path.startsWith("/")){
-    		return this.setPath(fragments[0]).clearQueryParameters().addQueryParameters(params);
+    		this.setPath(fragments[0]).clearQueryParameters().addQueryParameters(params).getCurrentUri().normalize();
+    		return this;
     	}
     	String[] segments = path.split("/");
     	if(segments.length > 0) {
@@ -997,7 +998,7 @@ public class JURI implements Cloneable {
     		}
     	}
     	path = "../".concat(path);
-    	String result = this.addPathSegments(false, path.split("/")).getCurrentUri().normalize().toString();
+    	String result = this.addPathSegments(false, path.split("/")).getCurrentUri().normalize().getPath().toString();
     	JURI r = setPathSegments(false, false, result.split("/")).addQueryParameters(params);
     	return r;
     }
