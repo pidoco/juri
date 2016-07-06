@@ -64,6 +64,7 @@ JURI uri = JURI.parse("blah/blub")
 uri.addPathSegment("sub%20dir")
 uri.getRawPath() // -> "blah/blub/sub%20dir"
 uri.getPath() // -> "blah/blub/sub dir"
+uri.navigate("../relative/path") // -> "blah/relative/path""
 ```
 
 Completely free (MIT license)
