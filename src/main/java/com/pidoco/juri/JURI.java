@@ -24,6 +24,19 @@
  */
 package com.pidoco.juri;
 
+import com.google.common.base.Splitter;
+import com.google.common.base.Supplier;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.net.InetAddresses;
+import com.google.common.net.UrlEscapers;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -38,20 +51,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.net.InetAddresses;
-import com.google.common.net.UrlEscapers;
 
 /**
  * Helps especially if you have to deal with changing (or even only getting) query parameters.
@@ -975,35 +974,35 @@ public class JURI implements Cloneable {
         changed();
         return this;
     }
-    
+
     public JURI navigate(String path) {
-    	if(StringUtils.isBlank(path)) {
-    		return this.setPath(path);
-    	}
-    	Map<String, String> params = new HashMap<String, String>();
-    	String[] fragments = path.split("\\?");
-    	path = fragments[0];
-    	if(fragments.length > 1) {
-    		params = Splitter.on("&").withKeyValueSeparator("=").split(fragments[1]);
-    	}
-    	if(path.startsWith("/")){
-    		this.setPath(fragments[0]).clearQueryParameters().addQueryParameters(params).getCurrentUri().normalize();
-    		return this;
-    	}
-    	String[] segments = path.split("/");
-    	if(segments.length > 0) {
-    		if(segments[0].contains(":")) {
-    			JURI r =  JURI.parse(path).addQueryParameters(params);
-    			return r;
-    		}
-    	}
-    	path = "../".concat(path);
-    	String result = this.addPathSegments(false, path.split("/")).getCurrentUri().normalize().getPath().toString();
-    	JURI r = setPathSegments(false, false, result.split("/")).addQueryParameters(params);
-    	return r;
+        if(StringUtils.isBlank(path)) {
+            return this.setPath(path);
+        }
+        Map<String, String> params = new HashMap<String, String>();
+        String[] fragments = path.split("\\?");
+        path = fragments[0];
+        if(fragments.length > 1) {
+            params = Splitter.on("&").withKeyValueSeparator("=").split(fragments[1]);
+        }
+        if(path.startsWith("/")){
+            this.setPath(fragments[0]).clearQueryParameters().addQueryParameters(params).getCurrentUri().normalize();
+            return this;
+        }
+        String[] segments = path.split("/");
+        if(segments.length > 0) {
+            if(segments[0].contains(":")) {
+                JURI r =  JURI.parse(path).addQueryParameters(params);
+                return r;
+            }
+        }
+        path = "../".concat(path);
+        String result = this.addPathSegments(false, path.split("/")).getCurrentUri().normalize().getPath().toString();
+        JURI r = setPathSegments(false, false, result.split("/")).addQueryParameters(params);
+        return r;
     }
 
-	public boolean isNeedingCurrentUriConstruction() {
+    public boolean isNeedingCurrentUriConstruction() {
         return currentUri == null;
     }
 
