@@ -1005,7 +1005,7 @@ public class JURI implements Cloneable {
      *   <li>"http://example.com/a/b.html".navigate("http://www.google.com/search?q=2") => "http://www.google.com/search?q=2"</li>
      *   <li>"http://example.com/a/b.html".navigate("c.html") => "http://example.com/a/c.html"</li>
      *   <li>"http://example.com/a/b.html".navigate("../c.html") => "http://example.com/c.html"</li>
-     *   <li>"http://example.com/a/b.html".navigate("../../../../c.html") => "http://example.com/../../../c.html"</li>
+     *   <li>"http://example.com/a/b.html".navigate("../../../../c.html") => "http://example.com/c.html"</li>
      *   <li>"http://example.com/a/b.html".navigate("#anchor") => "http://example.com/a/b.html#anchor"</li>
      * </ul>
      *
@@ -1031,6 +1031,9 @@ public class JURI implements Cloneable {
                     .getCurrentUri()
                     .normalize()
                     .getPath();
+            while (newPath.startsWith("/../")) {
+                newPath = newPath.substring(3);
+            }
         } else if (newURI.isPathAbsolute()) {
             // absolute path, nothing to do
         } else if (newURI.isHavingQueryParams()) {

@@ -639,7 +639,7 @@ public class JURITest {
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
         assertEquals("http://example.com/a/c.html" ,cut.clone().navigate("c.html").toString());
         assertEquals("http://example.com/c.html", cut.clone().navigate("../c.html").toString());
-        assertEquals("http://example.com/../../../c.html", cut.clone().navigate("../../../../c.html").toString());
+        assertEquals("http://example.com/c.html", cut.clone().navigate("../../../../c.html").toString());
         assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("#anchor").toString());
 
         cut = JURI.parse("/a/b/c/d/e/f");
@@ -670,9 +670,9 @@ public class JURITest {
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
         assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
         assertEquals("http://example.com/g.html", cut.clone().navigate( "g.html").toString());
-        assertEquals("http://example.com/../../c/h", cut.clone().navigate("../../c/h").toString());
-        assertEquals("http://example.com/../c.html", cut.clone().navigate("../c.html").toString());
-        assertEquals("http://example.com/../c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com/c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://example.com/c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
         assertEquals("http://example.com#anchor", cut.clone().navigate("#anchor").toString());
         assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
 
@@ -681,9 +681,9 @@ public class JURITest {
         assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
         assertEquals("http://example.com/a/b.html?a=b#hash", cut.clone().navigate("/a/b.html?a=b#hash").toString());
         assertEquals("http://example.com/g.html", cut.clone().navigate( "g.html").toString());
-        assertEquals("http://example.com/../../c/h", cut.clone().navigate("../../c/h").toString());
-        assertEquals("http://example.com/../c.html", cut.clone().navigate("../c.html").toString());
-        assertEquals("http://example.com/../c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com/c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://example.com/c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
         assertEquals("http://example.com?c=d#anchor", cut.clone().navigate("#anchor").toString());
         assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
     }
