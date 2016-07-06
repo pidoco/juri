@@ -123,13 +123,33 @@ public class JURI implements Cloneable {
      */
     public static JURI parse(String rawURI) {
         JURI result = new JURI();
+        result.parseNew(rawURI);
+        return result;
+    }
+
+    private JURI parseNew(String rawURI) {
         try {
-            result.prototype = result.currentUri = new URI(rawURI);
+            this.prototype = this.currentUri = new URI(rawURI);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException(
                     String.format("Cannot parse as URI: '%s'. Reason: %s", rawURI, e.getMessage()), e);
         }
-        return result;
+        return this;
+    }
+
+    private JURI resetBlank() {
+        prototype = null;
+        currentUri = null;
+        changeUnderway = false;
+        currentQueryParameters = null;
+        scheme = null;
+        removeAuthorityAndScheme = false;
+        rawUserInfo = null;
+        host = null;
+        port = null;
+        rawPath = null;
+        fragment = null;
+        return this;
     }
 
     public static JURI create(URI uri) {
@@ -976,30 +996,57 @@ public class JURI implements Cloneable {
     }
 
     public JURI navigate(String path) {
-        if(StringUtils.isBlank(path)) {
+        String originalPath = path;
+        if (StringUtils.isBlank(path)) {
             return this.setPath(path);
         }
-        Map<String, String> params = new HashMap<String, String>();
-        String[] fragments = path.split("\\?");
-        path = fragments[0];
-        if(fragments.length > 1) {
-            params = Splitter.on("&").withKeyValueSeparator("=").split(fragments[1]);
+        int fragmentPos = path.indexOf('#');
+        if (fragmentPos == 0) {
+            String fragment = StringUtils.substring(path, fragmentPos + 1);
+            this.setFragment(fragment);
+            return this;
+        } else if (fragmentPos > 0) {
+            String fragment = StringUtils.substring(path, fragmentPos + 1);
+            path = path.substring(0, fragmentPos);
+            this.setFragment(fragment);
+        } else {
+            this.setFragment(null);
         }
-        if(path.startsWith("/")){
-            this.setPath(fragments[0]).clearQueryParameters().addQueryParameters(params).getCurrentUri().normalize();
+        Map<String, String> params = new HashMap<String, String>();
+        String[] paramFragments = path.split("\\?");
+        path = paramFragments[0];
+        if (paramFragments.length > 1) {
+            params = Splitter.on("&")
+                    .withKeyValueSeparator("=")
+                    .split(paramFragments[1]);
+        }
+        if (path.startsWith("/")) {
+            this.setPath(paramFragments[0])
+                    .clearQueryParameters()
+                    .addQueryParameters(params)
+                    .getCurrentUri()
+                    .normalize();
             return this;
         }
         String[] segments = path.split("/");
-        if(segments.length > 0) {
-            if(segments[0].contains(":")) {
-                JURI r =  JURI.parse(path).addQueryParameters(params);
-                return r;
+        if (segments.length > 0) {
+            if (segments[0].contains(":")) {
+                return this.resetBlank()
+                        .parseNew(originalPath);
             }
         }
         path = "../".concat(path);
-        String result = this.addPathSegments(false, path.split("/")).getCurrentUri().normalize().getPath().toString();
-        JURI r = setPathSegments(false, false, result.split("/")).addQueryParameters(params);
-        return r;
+        this.addRawPath(path);
+        // this.addPathSegments(false, path.split("/"));
+        String result = this.clone()
+                .getCurrentUri()
+                .normalize()
+                .getPath();
+        this.setPath(result)
+                // this.setPathSegments(false, false, result.split("/"))
+                .clearQueryParameters()
+                .addQueryParameters(params);
+        return this;
     }
 
     public boolean isNeedingCurrentUriConstruction() {

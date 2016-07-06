@@ -281,7 +281,7 @@ public class JURITest {
     @Test
     public void testGetPathSegments() throws Exception {
         assertEquals(Arrays.asList(new String[]{}), JURI.parse("").getPathSegments());
-        assertEquals(Arrays.asList(new String[]{}), JURI.parse("/").getPathSegments());
+        assertEquals(Arrays.asList(new String[]{}), JURI.parse("/").getPathSegments()); 
 
         assertEquals(Arrays.asList(new String[]{""}), JURI.parse("http://a//").getPathSegments());
         assertEquals(Arrays.asList(new String[]{"", ""}), JURI.parse("http://a///").getPathSegments());
@@ -642,6 +642,9 @@ public class JURITest {
         assertEquals("/a/b/c/c/h", cut.clone().navigate("../../c/h").getPath());
         assertEquals("/a/b/c/d/c.html", cut.clone().navigate("../c.html").getPath());
         assertEquals("/a/b/c/d/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("/a/b/c/d/e/f#anchor", cut.clone().navigate("#anchor").toString());
+        assertEquals("/a/b/c/d/e/f", cut.clone().navigate("#").toString());
+        assertEquals("/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
 
         cut = JURI.parse("http://example.com//a/b/c/d/e/f");
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
@@ -650,13 +653,27 @@ public class JURITest {
         assertEquals("http://example.com/a/b/c/c/h", cut.clone().navigate("../../c/h").toString());
         assertEquals("http://example.com/a/b/c/d/c.html", cut.clone().navigate("../c.html").toString());
         assertEquals("http://example.com/a/b/c/d/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com//a/b/c/d/e/f#anchor", cut.clone().navigate("#anchor").toString());
+        assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
 
         cut = JURI.parse("http://example.com");
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
         assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
         assertEquals("http://example.com/g.html", cut.clone().navigate( "g.html").toString());
-        assertEquals("http://example.com/c/h", cut.clone().navigate("../../c/h").toString());
-        assertEquals("http://example.com/c.html", cut.clone().navigate("../c.html").toString());
-        assertEquals("http://example.com/c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com/../../c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://example.com/../c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/../c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com#anchor", cut.clone().navigate("#anchor").toString());
+        assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
+
+        cut = JURI.parse("http://example.com?c=d#asdf");
+        assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
+        assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
+        assertEquals("http://example.com/g.html", cut.clone().navigate( "g.html").toString());
+        assertEquals("http://example.com/../../c/h", cut.clone().navigate("../../c/h").toString());
+        assertEquals("http://example.com/../c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/../c/t/m.xml?q=1", cut.clone().navigate("../c/t/q/../m.xml?q=1").toString());
+        assertEquals("http://example.com?c=d#anchor", cut.clone().navigate("#anchor").toString());
+        assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("/a/b.html#anchor").toString());
     }
 }
