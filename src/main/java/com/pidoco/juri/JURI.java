@@ -1005,6 +1005,7 @@ public class JURI implements Cloneable {
      *   <li>"http://example.com/a/b.html".navigate("http://www.google.com/search?q=2") => "http://www.google.com/search?q=2"</li>
      *   <li>"http://example.com/a/b.html".navigate("c.html") => "http://example.com/a/c.html"</li>
      *   <li>"http://example.com/a/b.html".navigate("../c.html") => "http://example.com/c.html"</li>
+     *   <li>"http://example.com/a/b.html".navigate("../../../../c.html") => "http://example.com/../../../c.html"</li>
      *   <li>"http://example.com/a/b.html".navigate("#anchor") => "http://example.com/a/b.html#anchor"</li>
      * </ul>
      *
@@ -1012,57 +1013,43 @@ public class JURI implements Cloneable {
      * @return this.
      */
     public JURI navigate(String path) {
-        String originalPath = path;
-        if (StringUtils.isBlank(path)) {
-            return this.setPath(path);
+        JURI newURI = JURI.parse(path);
+        if (newURI.getHost() != null) {
+            return this.resetBlank()
+                    .parseNew(path);
         }
-        int fragmentPos = path.indexOf('#');
-        if (fragmentPos == 0) {
-            String fragment = StringUtils.substring(path, fragmentPos + 1);
-            this.setFragment(fragment);
-            return this;
-        } else if (fragmentPos > 0) {
-            String fragment = StringUtils.substring(path, fragmentPos + 1);
-            path = path.substring(0, fragmentPos);
-            this.setFragment(fragment);
-        } else {
-            this.setFragment(null);
-        }
-        Map<String, String> params = new HashMap<String, String>();
-        String[] paramFragments = path.split("\\?");
-        path = paramFragments[0];
-        if (paramFragments.length > 1) {
-            params = Splitter.on("&")
-                    .withKeyValueSeparator("=")
-                    .split(paramFragments[1]);
-        }
-        if (path.startsWith("/")) {
-            this.setPath(paramFragments[0])
-                    .clearQueryParameters()
-                    .addQueryParameters(params)
+
+        String newPath = newURI.getPath();
+        Map<String, Collection<String>> newQuery = newURI.getQueryParameters();
+        String newFragment = newURI.getFragment();
+
+        if (newURI.isPathRelative()) {
+            // relative path:
+            // calculate new normalized path
+            newPath = this.clone()
+                    .addRawPath("../" + newURI.getPath())
                     .getCurrentUri()
-                    .normalize();
-            return this;
+                    .normalize()
+                    .getPath();
+        } else if (newURI.isPathAbsolute()) {
+            // absolute path, nothing to do
+        } else if (newURI.isHavingQueryParams()) {
+            // no path but query (and maybe fragment):
+            // keep old path
+            newPath = this.getPath();
+        } else {
+            // only fragment:
+            // keep old path and query
+            newPath = this.getPath();
+            newQuery = this.getQueryParameters();
         }
-        String[] segments = path.split("/");
-        if (segments.length > 0) {
-            if (segments[0].contains(":")) {
-                return this.resetBlank()
-                        .parseNew(originalPath);
-            }
-        }
-        path = "../".concat(path);
-        this.addRawPath(path);
-        // this.addPathSegments(false, path.split("/"));
-        String result = this.clone()
-                .getCurrentUri()
-                .normalize()
-                .getPath();
-        this.setPath(result)
-                // this.setPathSegments(false, false, result.split("/"))
+
+        this.setPath(newPath)
                 .clearQueryParameters()
-                .addQueryParameters(params);
+                .addQueryParametersMulti(newQuery)
+                .setFragment(newFragment);
         return this;
+
     }
 
     public boolean isNeedingCurrentUriConstruction() {

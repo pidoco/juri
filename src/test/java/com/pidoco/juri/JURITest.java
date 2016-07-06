@@ -639,6 +639,7 @@ public class JURITest {
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
         assertEquals("http://example.com/a/c.html" ,cut.clone().navigate("c.html").toString());
         assertEquals("http://example.com/c.html", cut.clone().navigate("../c.html").toString());
+        assertEquals("http://example.com/../../../c.html", cut.clone().navigate("../../../../c.html").toString());
         assertEquals("http://example.com/a/b.html#anchor", cut.clone().navigate("#anchor").toString());
 
         cut = JURI.parse("/a/b/c/d/e/f");
@@ -655,6 +656,7 @@ public class JURITest {
         cut = JURI.parse("http://example.com//a/b/c/d/e/f");
         assertEquals("http://www.google.com/search?q=2", cut.clone().navigate("http://www.google.com/search?q=2").toString());
         assertEquals("http://example.com/a/b.html", cut.clone().navigate("/a/b.html").toString());
+        assertEquals("http://example.com//a/b/c/d/e/f?a=b", cut.clone().navigate("?a=b").toString());
         assertEquals("http://example.com/a/b/c/d/e/g.html", cut.clone().navigate( "g.html").toString());
         assertEquals("http://example.com/a/b/c/d/e/g.html?a=b#hash", cut.clone().navigate( "g.html?a=b#hash").toString());
         assertEquals("http://example.com/a/b/c/c/h", cut.clone().navigate("../../c/h").toString());
