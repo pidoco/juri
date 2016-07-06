@@ -995,6 +995,22 @@ public class JURI implements Cloneable {
         return this;
     }
 
+    /**
+     * Navigate to a new URI.<br>
+     * Changes the current JURI inplace, does not create a new object.<br>
+     * If the path is altered, it is normalized.<br>
+     * <br>
+     * Examples:
+     * <ul>
+     *   <li>"http://example.com/a/b.html".navigate("http://www.google.com/search?q=2") => "http://www.google.com/search?q=2"</li>
+     *   <li>"http://example.com/a/b.html".navigate("c.html") => "http://example.com/a/c.html"</li>
+     *   <li>"http://example.com/a/b.html".navigate("../c.html") => "http://example.com/c.html"</li>
+     *   <li>"http://example.com/a/b.html".navigate("#anchor") => "http://example.com/a/b.html#anchor"</li>
+     * </ul>
+     *
+     * @param path May be a relative path or a absolute URI to navigate to or an url fragment. 
+     * @return this.
+     */
     public JURI navigate(String path) {
         String originalPath = path;
         if (StringUtils.isBlank(path)) {
