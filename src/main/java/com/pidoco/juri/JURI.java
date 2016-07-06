@@ -1023,36 +1023,37 @@ public class JURI implements Cloneable {
         Map<String, Collection<String>> newQuery = newURI.getQueryParameters();
         String newFragment = newURI.getFragment();
 
-        if (newURI.isPathRelative()) {
-            // relative path:
-            // calculate new normalized path
-            newPath = this.clone()
-                    .addRawPath("../" + newURI.getPath())
-                    .getCurrentUri()
-                    .normalize()
-                    .getPath();
-            while (newPath.startsWith("/../")) {
-                newPath = newPath.substring(3);
+        if (newURI.isHavingPath()) {
+            // set new path (and maybe query and fragment):
+            if (newURI.isPathRelative()) {
+                // relative path:
+                // calculate new normalized absolute path
+                newPath = this.clone()
+                        .addRawPath("../" + newURI.getPath())
+                        .getCurrentUri()
+                        .normalize()
+                        .getPath();
+                while (newPath.startsWith("/../")) {
+                    newPath = newPath.substring(3);
+                }
             }
-        } else if (newURI.isPathAbsolute()) {
-            // absolute path, nothing to do
+            this.setPath(newPath)
+                    .clearQueryParameters()
+                    .addQueryParametersMulti(newQuery)
+                    .setFragment(newFragment);
         } else if (newURI.isHavingQueryParams()) {
             // no path but query (and maybe fragment):
             // keep old path
-            newPath = this.getPath();
+            this.clearQueryParameters()
+                    .addQueryParametersMulti(newQuery)
+                    .setFragment(newFragment);
         } else {
             // only fragment:
             // keep old path and query
-            newPath = this.getPath();
-            newQuery = this.getQueryParameters();
+            this.setFragment(newFragment);
         }
 
-        this.setPath(newPath)
-                .clearQueryParameters()
-                .addQueryParametersMulti(newQuery)
-                .setFragment(newFragment);
         return this;
-
     }
 
     public boolean isNeedingCurrentUriConstruction() {
