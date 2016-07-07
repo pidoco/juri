@@ -81,6 +81,13 @@ Dependencies
  + slf4j-api for logging.
 
 
+Building
+--------
+
+Before building copy `gradle.properties.example` to `gradle.properties`.
+Build using `gradle build`.
+
+
 Related work
 ------------
 

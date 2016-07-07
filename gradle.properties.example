@@ -1,0 +1,11 @@
+
+# configure this with your gpg key if you want to be able to sign your packages
+# if you don't need to sign, leave it as commment
+#signing.keyId=YourKeyId
+#signing.password=YourPublicKeyPassword
+#signing.secretKeyRingFile=PathToYourKeyRingFile
+
+# configure this with your sonatype credentials if you want to be able to upload to maven central
+# leave these settings if you do not need to.
+ossrhUsername=your-jira-id
+ossrhPassword=your-jira-password

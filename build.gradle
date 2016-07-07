@@ -8,13 +8,11 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    
+
     compile 'org.slf4j:slf4j-api:1.7.5'
     compile 'com.google.code.findbugs:jsr305:2.0.0'
-    
     compile 'com.google.guava:guava:18.0' // for URI element-specific escapers
     compile 'org.apache.commons:commons-lang3:3.3.2' // using this for null checks, common string modifications etc
-    
     testCompile 'junit:junit:4.11'
 }
 
@@ -24,16 +22,22 @@ repositories {
 }
 
 apply plugin: 'maven-publish'
-task sourceJar(type: Jar) {
+task sourcesJar(type: Jar) {
     from sourceSets.main.allJava
+}
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+artifacts {
+    archives javadocJar, sourcesJar
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            
-            artifact sourceJar {
+            artifact sourcesJar {
                 classifier "sources"
             }
         }
@@ -42,4 +46,62 @@ publishing {
 
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+
+signing {
+    required { isReleaseVersion && gradle.taskGraph.hasTask("uploadArchives") }
+    sign configurations.archives
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'juri'
+        packaging 'jar'
+        description = '''URI manipulation made easy:
+          new JURI(uri).replaceQueryParameter("query", "my next query").toString()'''
+        url 'http://www.github.com/pidoco/juri'
+
+        scm {
+          connection 'scm:git:https://github.com/pidoco/juri.git'
+          developerConnection 'scm:git:git@github.com:pidoco/juri.git'
+          url 'https://github.com/pidoco/juri'
+        }
+
+        licenses {
+          license {
+            name 'The MIT License (MIT)'
+            url 'https://github.com/pidoco/juri/blob/master/LICENSE.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id 'tec'
+            name 'Silvan Golega'
+            email 'silvan.golega@pidoco.com'
+          }
+          developer {
+            id 'georgkoester'
+            name 'Georg Koester'
+          }
+        }
+      }
+    }
+  }
+}
 
