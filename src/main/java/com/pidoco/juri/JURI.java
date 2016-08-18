@@ -997,16 +997,19 @@ public class JURI implements Cloneable {
 
     /**
      * Navigate to a new URI.<br>
-     * Changes the current JURI inplace, does not create a new object.<br>
+     * The navigate method tries to mimic browser behaviour:
+     * 'What happens if you are on the current URI and click on the (relative or absolute) link.'<br>
+     * The method changes the current JURI inplace, it does not create a new object.
      * If the path is altered, it is normalized.<br>
      * <br>
      * Examples:
      * <ul>
-     *   <li>"http://example.com/a/b.html".navigate("http://www.google.com/search?q=2") => "http://www.google.com/search?q=2"</li>
-     *   <li>"http://example.com/a/b.html".navigate("c.html") => "http://example.com/a/c.html"</li>
-     *   <li>"http://example.com/a/b.html".navigate("../c.html") => "http://example.com/c.html"</li>
-     *   <li>"http://example.com/a/b.html".navigate("../../../../c.html") => "http://example.com/c.html"</li>
-     *   <li>"http://example.com/a/b.html".navigate("#anchor") => "http://example.com/a/b.html#anchor"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("http://www.google.com/search?q=2") =&gt; "http://www.google.com/search?q=2"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("c.html")                           =&gt; "http://example.com/a/c.html"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("c.html?z=1")                       =&gt; "http://example.com/a/c.html"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("../c.html")                        =&gt; "http://example.com/c.html"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("../../../../c.html")               =&gt; "http://example.com/c.html"</li>
+     *   <li>JURI.parse("http://example.com/a/b.html").navigate("#anchor")                          =&gt; "http://example.com/a/b.html#anchor"</li>
      * </ul>
      *
      * @param path May be a relative path or a absolute URI to navigate to or an url fragment. 
