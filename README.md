@@ -60,10 +60,23 @@ JURI.parse("...?q=X&q=Y").replaceQueryParameter("q", "value").toString() // -> "
 
 Read, set and alter paths:
 ```java
-JURI uri = JURI.parse("blah/blub")
-uri.addPathSegment("sub%20dir")
-uri.getRawPath() // -> "blah/blub/sub%20dir"
-uri.getPath() // -> "blah/blub/sub dir"
+JURI uri = JURI.parse("blah/blub");
+uri.addPathSegment("sub%20dir");
+uri.getRawPath();                            // -> "blah/blub/sub%20dir"
+uri.getPath();                               // -> "blah/blub/sub dir"
+uri.navigate("../relative/path").toString(); // -> "blah/relative/path""
+```
+
+The navigate method tries to mimic browser behaviour:
+'What happens if you are on the current URI and click on the (relative or absolute) link:
+```java
+uri = JURI.parse("http://example.com?c=d#asdf");
+uri.navigate("/a/b.html?a=b#hash").toString();              // -> "http://example.com/a/b.html?a=b#hash"
+uri.navigate("../c.html").toString();                       // -> "http://example.com/c.html"
+uri.navigate("g.html").toString();                          // -> "http://example.com/g.html"
+uri.navigate("#anchor").toString();                         // -> "http://example.com/g.html#anchor"
+uri.navigate("/a/b.html#anchor").toString();                // -> "http://example.com/a/b.html#anchor"
+uri.navigate("http://www.google.com/search?q=2").toString() // -> "http://www.google.com/search?q=2"
 ```
 
 Completely free (MIT license)

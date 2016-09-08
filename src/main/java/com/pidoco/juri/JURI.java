@@ -46,37 +46,45 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Helps especially if you have to deal with changing (or even only getting) query parameters.
+ * Helps especially if you have to deal with changing (or even only getting)
+ * query parameters.
  *
  * <p>
- * The class doesn't verify the URI until {@link #getCurrentUri()} or any of the methods calling it like
- * {@link #toString()} are called. E.g.
+ * The class doesn't verify the URI until {@link #getCurrentUri()} or any of the
+ * methods calling it like {@link #toString()} are called. E.g.
+ * 
  * <pre>
  *     cut = JURI.parse("http://[::1.1.1.1]")
  *     assertTrue(cut.setPath("dsfd/").isPathRelative());
  *     cut.getCurrentUri(); // fails here
  * </pre>
+ * 
  * </p>
  *
- * <p>This is a mutable class - so it doesn't provide an equals or hashCode implementation. Use URI from
- * {@link #getCurrentUri()} or String from {@link #toString()} if you need to compare or store in a map.
- * It doesn't provide an equals or hashCode implementation so as to fail early when it is used in this anti-pattern.
+ * <p>
+ * This is a mutable class - so it doesn't provide an equals or hashCode
+ * implementation. Use URI from {@link #getCurrentUri()} or String from
+ * {@link #toString()} if you need to compare or store in a map. It doesn't
+ * provide an equals or hashCode implementation so as to fail early when it is
+ * used in this anti-pattern.
  * </p>
  *
- * Why not {@link java.net.URL} as the underlying class? Its equals calls DNS and compares IP addresses....
+ * Why not {@link java.net.URL} as the underlying class? Its equals calls DNS
+ * and compares IP addresses....
  */
 @ParametersAreNonnullByDefault
 public class JURI implements Cloneable {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JURI.class);
+    private static final Logger      LOG                      = LoggerFactory.getLogger(JURI.class);
 
-    public static final URI EMPTY_URI;
+    public static final URI          EMPTY_URI;
     static {
         URI protoEmptyUri = null;
         try {
@@ -87,21 +95,21 @@ public class JURI implements Cloneable {
         EMPTY_URI = protoEmptyUri;
     }
 
-    private URI prototype;
+    private URI                      prototype;
 
-    private URI currentUri;
+    private URI                      currentUri;
 
-    private boolean changeUnderway = false;
+    private boolean                  changeUnderway           = false;
 
     private Multimap<String, String> currentQueryParameters;
 
-    private String scheme;
-    private boolean removeAuthorityAndScheme = false;
-    private String rawUserInfo;
-    private String host;
-    private Integer port ;
-    private String rawPath;
-    private String fragment;
+    private String                   scheme;
+    private boolean                  removeAuthorityAndScheme = false;
+    private String                   rawUserInfo;
+    private String                   host;
+    private Integer                  port;
+    private String                   rawPath;
+    private String                   fragment;
 
     /**
      * Creates a URI with empty content "".
@@ -118,17 +126,38 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @throws IllegalArgumentException if the given URI cannot be parsed.
+     * @throws IllegalArgumentException
+     *             if the given URI cannot be parsed.
      */
     public static JURI parse(String rawURI) {
         JURI result = new JURI();
-        try {
-            result.prototype = result.currentUri = new URI(rawURI);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException(
-                    String.format("Cannot parse as URI: '%s'. Reason: %s", rawURI, e.getMessage()), e);
-        }
+        result.parseNew(rawURI);
         return result;
+    }
+
+    private JURI parseNew(String rawURI) {
+        try {
+            this.prototype = this.currentUri = new URI(rawURI);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException(String.format("Cannot parse as URI: '%s'. Reason: %s", rawURI,
+                    e.getMessage()), e);
+        }
+        return this;
+    }
+
+    private JURI resetBlank() {
+        prototype = null;
+        currentUri = null;
+        changeUnderway = false;
+        currentQueryParameters = null;
+        scheme = null;
+        removeAuthorityAndScheme = false;
+        rawUserInfo = null;
+        host = null;
+        port = null;
+        rawPath = null;
+        fragment = null;
+        return this;
     }
 
     public static JURI create(URI uri) {
@@ -164,8 +193,8 @@ public class JURI implements Cloneable {
         int port = this.port == null ? this.prototype.getPort() : this.port;
         CharSequence rawPath = this.rawPath == null ? this.prototype.getRawPath() : this.rawPath;
         CharSequence rawQuery = this.buildQueryParametersString();
-        String rawFragment = this.fragment == null ? this.prototype.getRawFragment() :
-                UrlEscapers.urlFragmentEscaper().escape(this.fragment);
+        String rawFragment = this.fragment == null ? this.prototype.getRawFragment() : UrlEscapers.urlFragmentEscaper()
+                .escape(this.fragment);
 
         StringBuilder builder = new StringBuilder(32);
         if (!removeAuthorityAndScheme) {
@@ -179,13 +208,15 @@ public class JURI implements Cloneable {
                 builder.append("//");
             }
             if (StringUtils.isNotBlank(rawUserInfo)) {
-                builder.append(rawUserInfo).append('@');
+                builder.append(rawUserInfo)
+                        .append('@');
             }
             if (StringUtils.isNotBlank(rawHost)) {
                 builder.append(rawHost);
             }
             if (port > 0) {
-                builder.append(':').append(port);
+                builder.append(':')
+                        .append(port);
             }
         }
 
@@ -193,10 +224,12 @@ public class JURI implements Cloneable {
             builder.append(rawPath);
         }
         if (StringUtils.isNotBlank(rawQuery)) {
-            builder.append('?').append(rawQuery);
+            builder.append('?')
+                    .append(rawQuery);
         }
         if (StringUtils.isNotBlank(rawFragment)) {
-            builder.append('#').append(rawFragment);
+            builder.append('#')
+                    .append(rawFragment);
         }
 
         return builder;
@@ -209,7 +242,8 @@ public class JURI implements Cloneable {
             decodedHost = prototype.getHost();
         }
         if (StringUtils.startsWith(decodedHost, "[") && StringUtils.endsWith(decodedHost, "]")) {
-            return decodedHost; // ipv6 and other address literal that is not encoded (at least currently)
+            return decodedHost; // ipv6 and other address literal that is not
+                                // encoded (at least currently)
         }
         return urlEncode(decodedHost);
     }
@@ -231,7 +265,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @param scheme null not supported
+     * @param scheme
+     *            null not supported
      */
     public JURI setScheme(String scheme) {
         startChange();
@@ -255,12 +290,15 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * Use {@link #urlEncode(String)} if you want to encode the scheme specific part, or the http-specific manipulation
-     * methods provided by this class.
+     * Use {@link #urlEncode(String)} if you want to encode the scheme specific
+     * part, or the http-specific manipulation methods provided by this class.
      *
-     * <p>If no scheme is currently set the scheme will become 'unspecified'.</p>
+     * <p>
+     * If no scheme is currently set the scheme will become 'unspecified'.
+     * </p>
      *
-     * @param rawSchemeSpecificPart null or "" not allowed.
+     * @param rawSchemeSpecificPart
+     *            null or "" not allowed.
      */
     public JURI setRawSchemeSpecificPart(String rawSchemeSpecificPart) {
         rawSchemeSpecificPart = StringUtils.defaultString(rawSchemeSpecificPart);
@@ -288,26 +326,33 @@ public class JURI implements Cloneable {
      * @return maybe ""
      */
     public String getRawSchemeSpecificPart() {
-        return  getCurrentUri().getRawSchemeSpecificPart();
+        return getCurrentUri().getRawSchemeSpecificPart();
     }
 
     /**
-     * BEWARE, this cannot be used to escape many http scheme specific parts, as possibly other scheme's specific parts.
-     * Problem is the different escaping of some characters depending on the (semantic) location.
+     * BEWARE, this cannot be used to escape many http scheme specific parts, as
+     * possibly other scheme's specific parts. Problem is the different escaping
+     * of some characters depending on the (semantic) location.
      *
-     * <p>If no scheme is currently set the scheme will become 'unspecified'.</p>
+     * <p>
+     * If no scheme is currently set the scheme will become 'unspecified'.
+     * </p>
      *
-     * @param schemeSpecificPart null or "" not allowed.
+     * @param schemeSpecificPart
+     *            null or "" not allowed.
      */
     public JURI setSchemeSpecificPart(String schemeSpecificPart) {
         schemeSpecificPart = StringUtils.defaultString(schemeSpecificPart);
 
-        setRawSchemeSpecificPart(UrlEscapers.urlFragmentEscaper().escape(schemeSpecificPart));
+        setRawSchemeSpecificPart(UrlEscapers.urlFragmentEscaper()
+                .escape(schemeSpecificPart));
         return this;
     }
 
     /**
-     * Return e.g. the decoded mail address for URI <code>mailto:Pelé@domain.org</code>.
+     * Return e.g. the decoded mail address for URI
+     * <code>mailto:Pelé@domain.org</code>.
+     * 
      * @return maybe ""
      */
     public String getSchemeSpecificPart() {
@@ -384,7 +429,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @param host null or "" remove host.
+     * @param host
+     *            null or "" remove host.
      */
     public JURI setHost(@Nullable String host) {
         startChange();
@@ -407,13 +453,16 @@ public class JURI implements Cloneable {
     /**
      * Does not attempt name resolution (and therefore does not block).
      *
-     * @param address to set as hostname. Works with both ipv4 and ipv6 addresses. ipv4 addresses in ipv6 form are
-     *                set as ipv6 address. A given ipv4 address is not converted into an ipv6 address.
-     * @param useHostIfAvailable if true, checks if the address has a known hostname
-     *                           and uses that name instead of the address. Consider using {@link #setHost(String)}}
-     *                           directly instead.
-     *                           No name resolution is performed at the penalty of additional string concatenation
-     *                           when using {@link InetAddress#toString()}.
+     * @param address
+     *            to set as hostname. Works with both ipv4 and ipv6 addresses.
+     *            ipv4 addresses in ipv6 form are set as ipv6 address. A given
+     *            ipv4 address is not converted into an ipv6 address.
+     * @param useHostIfAvailable
+     *            if true, checks if the address has a known hostname and uses
+     *            that name instead of the address. Consider using
+     *            {@link #setHost(String)} directly instead. No name resolution
+     *            is performed at the penalty of additional string concatenation
+     *            when using {@link InetAddress#toString()}.
      */
     public JURI setHost(@Nullable InetAddress address, boolean useHostIfAvailable) {
         if (address == null) {
@@ -429,13 +478,17 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * Relies on implementation details of the InetAddress class, hopefully not changing. There is a test, of course.
+     * Relies on implementation details of the InetAddress class, hopefully not
+     * changing. There is a test, of course.
      */
     protected static boolean checkIfAddressHasHostnameWithoutNameLookup(InetAddress address) {
-        // Cannot check with getHostName or getCanonicalName because they can incur a name lookup and we want to avoid
+        // Cannot check with getHostName or getCanonicalName because they can
+        // incur a name lookup and we want to avoid
         // blocking.
-        // Remark: InetSocketAddress's unresolved and holder functionality not better suited.
-        return !address.toString().startsWith("/");
+        // Remark: InetSocketAddress's unresolved and holder functionality not
+        // better suited.
+        return !address.toString()
+                .startsWith("/");
     }
 
     @Nullable
@@ -451,7 +504,8 @@ public class JURI implements Cloneable {
 
     /**
      *
-     * @param port null or -1 remove
+     * @param port
+     *            null or -1 remove
      */
     public JURI setPort(@Nullable Integer port) {
         startChange();
@@ -483,11 +537,15 @@ public class JURI implements Cloneable {
     /**
      * Replace current path with the concatenation of the given segments.
      *
-     * @param absolute (not relative) if true will set the path with '/' at
-     *                 beginning. Also if no segments are given.
-     * @param slashAtEnd if true and if there is at least one segment, will add a terminating '/' to path.
-     * @param segments here even slash ('/') characters can be specified without escaping them - they will be
-     *                 escaped to %2F by the method.
+     * @param absolute
+     *            (not relative) if true will set the path with '/' at
+     *            beginning. Also if no segments are given.
+     * @param slashAtEnd
+     *            if true and if there is at least one segment, will add a
+     *            terminating '/' to path.
+     * @param segments
+     *            here even slash ('/') characters can be specified without
+     *            escaping them - they will be escaped to %2F by the method.
      */
     public JURI setPathSegments(boolean absolute, boolean slashAtEnd, String... segments) {
         StringBuilder result = buildRawPathString(absolute, slashAtEnd, segments);
@@ -503,7 +561,8 @@ public class JURI implements Cloneable {
         }
         boolean addedOne = false;
         for (String s : segments) {
-            result.append(UrlEscapers.urlPathSegmentEscaper().escape(s));
+            result.append(UrlEscapers.urlPathSegmentEscaper()
+                    .escape(s));
             result.append('/');
             addedOne = true;
         }
@@ -565,18 +624,20 @@ public class JURI implements Cloneable {
             }
         }
 
-        return left + (needsSeparator ? "/" : "")
-                + right.subSequence(rightStart, right.length());
+        return left + (needsSeparator ? "/" : "") + right.subSequence(rightStart, right.length());
     }
 
     /**
-     * @param unescapedPath null or "" clear the path. Path may contain characters that need escaping like umlauts etc.
-     *                      Segments are separated by '/'. With this method '/' cannot be escaped, use one of the
-     *                      {@link #setPathSegments(boolean, boolean, String...)} if your path segments may contain
-     *                      '/' characters, but
-     *                      beware that the {@link URI} class does not support that. Path is not
-     *             canonicalized (//, ../ resolved etc) until URI is created with e.g. {@link #getCurrentUri()} or
-     *             {@link #toString()}, which uses {@link #getCurrentUri()}.
+     * @param unescapedPath
+     *            null or "" clear the path. Path may contain characters that
+     *            need escaping like umlauts etc. Segments are separated by '/'.
+     *            With this method '/' cannot be escaped, use one of the
+     *            {@link #setPathSegments(boolean, boolean, String...)} if your
+     *            path segments may contain '/' characters, but beware that the
+     *            {@link URI} class does not support that. Path is not
+     *            canonicalized (//, ../ resolved etc) until URI is created with
+     *            e.g. {@link #getCurrentUri()} or {@link #toString()}, which
+     *            uses {@link #getCurrentUri()}.
      */
     public JURI setPath(@Nullable String unescapedPath) {
         startChange();
@@ -591,8 +652,11 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * Escapes non-path characters. Slash ('/') characters may be included in segments if escaped by backslash.
-     * @param completeUnescapedPath e.g. //b\/f//kf/ -> //b%XXf//kf/
+     * Escapes non-path characters. Slash ('/') characters may be included in
+     * segments if escaped by backslash.
+     * 
+     * @param completeUnescapedPath
+     *            e.g. //b\/f//kf/ -> //b%XXf//kf/
      * @return the used string builder.
      */
     public static StringBuilder escapeMultiSegmentPath(String completeUnescapedPath) {
@@ -610,7 +674,8 @@ public class JURI implements Cloneable {
                 }
             }
             if (current == '/') {
-                pathBuilder.append(UrlEscapers.urlPathSegmentEscaper().escape(temp.toString()));
+                pathBuilder.append(UrlEscapers.urlPathSegmentEscaper()
+                        .escape(temp.toString()));
                 pathBuilder.append('/');
                 temp.setLength(0);
                 continue;
@@ -618,7 +683,8 @@ public class JURI implements Cloneable {
             temp.append(current);
         }
         if (temp.length() > 0) {
-            pathBuilder.append(UrlEscapers.urlPathSegmentEscaper().escape(temp.toString()));
+            pathBuilder.append(UrlEscapers.urlPathSegmentEscaper()
+                    .escape(temp.toString()));
         }
 
         return pathBuilder;
@@ -630,7 +696,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @param rawPath Use an empty string to remove the path.
+     * @param rawPath
+     *            Use an empty string to remove the path.
      */
     public JURI setRawPath(@Nullable String rawPath) {
         startChange();
@@ -660,7 +727,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @return true if a path is set: http://a.com/ : true, http://a.com : false.
+     * @return true if a path is set: http://a.com/ : true, http://a.com :
+     *         false.
      */
     public boolean isHavingPath() {
         String rawPath = StringUtils.defaultIfBlank(getRawPath(), "");
@@ -684,9 +752,10 @@ public class JURI implements Cloneable {
 
     /**
      * Decodes the path segments on request.
-     * @return a new list that the caller may manipulate. Empty string if no path or the root path is set. Returns
-     * empty path segments (//as//df// has three empty
-     * segments).
+     * 
+     * @return a new list that the caller may manipulate. Empty string if no
+     *         path or the root path is set. Returns empty path segments
+     *         (//as//df// has three empty segments).
      */
     public List<String> getPathSegments() {
         ArrayList<String> result = getRawPathSegments();
@@ -699,9 +768,10 @@ public class JURI implements Cloneable {
 
     /**
      * Doesn't decode the path segments.
-     * @return a new list that the caller may manipulate. Empty string if no path or the root path is set. Returns
-     * empty path segments (//as//df// has three empty
-     * segments).
+     * 
+     * @return a new list that the caller may manipulate. Empty string if no
+     *         path or the root path is set. Returns empty path segments
+     *         (//as//df// has three empty segments).
      */
     public ArrayList<String> getRawPathSegments() {
         return splitRawPath(StringUtils.defaultString(getRawPath()));
@@ -722,7 +792,9 @@ public class JURI implements Cloneable {
         }
 
         boolean first = true;
-        Iterator<String> splitIter = Splitter.on('/').split(rawPath).iterator();
+        Iterator<String> splitIter = Splitter.on('/')
+                .split(rawPath)
+                .iterator();
         while (splitIter.hasNext()) {
             String current = splitIter.next();
             if (first) {
@@ -751,7 +823,8 @@ public class JURI implements Cloneable {
 
     /**
      *
-     * @param fragment null or "" clears the fragment part
+     * @param fragment
+     *            null or "" clears the fragment part
      */
     public JURI setFragment(@Nullable String fragment) {
         startChange();
@@ -777,10 +850,14 @@ public class JURI implements Cloneable {
             if (!first) {
                 paramsString.append('&');
             }
-            String keyEnc = UrlEscapers.urlFormParameterEscaper().escape(entry.getKey());
+            String keyEnc = UrlEscapers.urlFormParameterEscaper()
+                    .escape(entry.getKey());
             if (entry.getValue() != null) {
-                String valueEnc = UrlEscapers.urlFormParameterEscaper().escape(entry.getValue());
-                paramsString.append(keyEnc).append('=').append(valueEnc);
+                String valueEnc = UrlEscapers.urlFormParameterEscaper()
+                        .escape(entry.getValue());
+                paramsString.append(keyEnc)
+                        .append('=')
+                        .append(valueEnc);
             } else {
                 paramsString.append(keyEnc);
             }
@@ -799,7 +876,8 @@ public class JURI implements Cloneable {
         if (vals.isEmpty()) {
             return null;
         }
-        return vals.iterator().next();
+        return vals.iterator()
+                .next();
     }
 
     public boolean isHavingQueryParams() {
@@ -914,8 +992,7 @@ public class JURI implements Cloneable {
     }
 
     protected static Multimap<String, String> createParamsMultimap() {
-        return Multimaps.<String, String>newListMultimap(
-                new LinkedHashMap<String, Collection<String>>(),
+        return Multimaps.<String, String> newListMultimap(new LinkedHashMap<String, Collection<String>>(),
                 new Supplier<ArrayList<String>>() {
                     @Override
                     public ArrayList<String> get() {
@@ -974,6 +1051,85 @@ public class JURI implements Cloneable {
         return this;
     }
 
+    /**
+     * Navigate to a new URI.<br>
+     * The navigate method tries to mimic browser behaviour: 'What happens if
+     * you are on the current URI and click on the (relative or absolute) link.'<br>
+     * The method changes the current JURI inplace, it does not create a new
+     * object. If the path is altered, it is normalized.<br>
+     * <br>
+     * Examples:
+     * <ul>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate(
+     * "http://www.google.com/search?q=2") =&gt;
+     * "http://www.google.com/search?q=2"</li>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate("c.html") =&gt;
+     * "http://example.com/a/c.html"</li>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate("c.html?z=1")
+     * =&gt; "http://example.com/a/c.html"</li>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate("../c.html") =&gt;
+     * "http://example.com/c.html"</li>
+     * <li>
+     * JURI.parse("http://example.com/a/b.html").navigate("../../../../c.html")
+     * =&gt; "http://example.com/c.html"</li>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate("#anchor") =&gt;
+     * "http://example.com/a/b.html#anchor"</li>
+     * </ul>
+     *
+     * @param path
+     *            May be a relative path or a absolute URI to navigate to or an
+     *            url fragment.
+     * @return this.
+     */
+    public JURI navigate(String path) {
+        JURI newURI = JURI.parse(path);
+        if (newURI.getHost() != null) {
+            return this.resetBlank()
+                    .parseNew(path);
+        }
+
+        String newPath = newURI.getPath();
+        Map<String, Collection<String>> newQuery = newURI.getQueryParameters();
+        String newFragment = newURI.getFragment();
+
+        if (newURI.isHavingPath()) {
+            // set new path (and maybe query and fragment):
+            if (newURI.isPathRelative()) {
+                // relative path:
+                // calculate new normalized absolute path
+                newPath = this.clone()
+                        .addRawPath("../" + newURI.getPath())
+                        .getCurrentUri()
+                        .normalize()
+                        .getPath();
+                while (newPath.startsWith("/../")) {
+                    // When in root directory ../ refers to the root directory,
+                    // as there is no parent. Some would expect that normalize()
+                    // would remove superfluos ../ but it does not, because
+                    // normalize() does not know whether the path is relative or
+                    // absolute.
+                    newPath = newPath.substring(3);
+                }
+            }
+            this.setPath(newPath)
+                    .clearQueryParameters()
+                    .addQueryParametersMulti(newQuery)
+                    .setFragment(newFragment);
+        } else if (newURI.isHavingQueryParams()) {
+            // no path but query (and maybe fragment):
+            // keep old path
+            this.clearQueryParameters()
+                    .addQueryParametersMulti(newQuery)
+                    .setFragment(newFragment);
+        } else {
+            // only fragment:
+            // keep old path and query
+            this.setFragment(newFragment);
+        }
+
+        return this;
+    }
+
     public boolean isNeedingCurrentUriConstruction() {
         return currentUri == null;
     }
@@ -984,8 +1140,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * Splitting into startChange and changed isn't strictly necessary - but it is when people debug the calling
-     * methods.
+     * Splitting into startChange and changed isn't strictly necessary - but it
+     * is when people debug the calling methods.
      */
     private void changed() {
         this.changeUnderway = false;
@@ -1009,7 +1165,8 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * Provides encoded URI - recreates the URI, should not be used if more changes will be applied to the wrapper.
+     * Provides encoded URI - recreates the URI, should not be used if more
+     * changes will be applied to the wrapper.
      */
     @Override
     public String toString() {
@@ -1027,7 +1184,9 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @throws IllegalStateException wrapping URISyntaxException if the internal state cannot result in a working URI.
+     * @throws IllegalStateException
+     *             wrapping URISyntaxException if the internal state cannot
+     *             result in a working URI.
      */
     @Override
     public JURI clone() throws IllegalStateException {
@@ -1039,7 +1198,8 @@ public class JURI implements Cloneable {
         }
 
         if (clone.currentUri == null) {
-            // goal here is to avoid having stateful objects in the clone and the original.
+            // goal here is to avoid having stateful objects in the clone and
+            // the original.
             try {
                 clone.buildAndReset();
             } catch (URISyntaxException e) {
