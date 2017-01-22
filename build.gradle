@@ -1,3 +1,15 @@
+
+// got to use the buildscript way of specifying bnd plugin - plugins {id:...} fails
+// because automatically expecting/searching workspace (cnf folder above project folder)
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:3.5.0'
+    }
+}
+
 apply plugin: 'java'
 
 group = 'com.pidoco'
@@ -8,12 +20,15 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-
-    compile 'org.slf4j:slf4j-api:1.7.5'
-    compile 'com.google.code.findbugs:jsr305:2.0.0'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'com.google.code.findbugs:jsr305:3.0.2'
     compile 'com.google.guava:guava:18.0' // for URI element-specific escapers
-    compile 'org.apache.commons:commons-lang3:3.3.2' // using this for null checks, common string modifications etc
-    testCompile 'junit:junit:4.11'
+    compile 'org.apache.commons:commons-lang3:3.7' // using this for null checks, common string modifications etc
+
+    // testing in OSGi environment requires these wrappers
+    testCompile 'org.osgi:osgi.enroute.junit.wrapper:4.12.0'
+    testCompile 'org.osgi:osgi.enroute.hamcrest.wrapper:1.3.0'
+    testRuntime 'org.slf4j:slf4j-simple:1.7.25'
 }
 
 repositories {
@@ -43,6 +58,8 @@ publishing {
         }
     }
 }
+
+apply plugin: 'biz.aQute.bnd.builder'
 
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -98,10 +115,10 @@ uploadArchives {
           developer {
             id 'georgkoester'
             name 'Georg Koester'
+            email 'mail@georgkoester.de'
           }
         }
       }
     }
   }
 }
-

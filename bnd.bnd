@@ -1,0 +1,5 @@
+-exportcontents: com.pidoco.juri
+-sources: true
+Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}
+
+Bundle-Description: The JURI library.
