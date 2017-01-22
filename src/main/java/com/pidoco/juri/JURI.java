@@ -814,7 +814,7 @@ public class JURI implements Cloneable {
     }
 
     /**
-     * @return true if a fragment is set: http://a.com/ : true, http://a.com :
+     * @return true if a fragment is set: http://a.com/#aFragment : true, http://a.com/ :
      *         false.
      */
     public boolean isHavingFragment() {
