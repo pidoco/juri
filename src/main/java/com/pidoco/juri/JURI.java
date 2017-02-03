@@ -46,7 +46,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -814,6 +813,15 @@ public class JURI implements Cloneable {
         return result;
     }
 
+    /**
+     * @return true if a fragment is set: http://a.com/#aFragment : true, http://a.com/ :
+     *         false.
+     */
+    public boolean isHavingFragment() {
+        String fragment = StringUtils.defaultIfBlank(getFragment(), "");
+        return fragment.length() > 0;
+    }
+
     public String getFragment() {
         if (fragment == null) {
             fragment = prototype.getFragment();
@@ -1074,6 +1082,8 @@ public class JURI implements Cloneable {
      * =&gt; "http://example.com/c.html"</li>
      * <li>JURI.parse("http://example.com/a/b.html").navigate("#anchor") =&gt;
      * "http://example.com/a/b.html#anchor"</li>
+     * <li>JURI.parse("http://example.com/a/b.html").navigate("") =&gt;
+     * http://example.com/a/b.html (No changes to URL)</li>
      * </ul>
      *
      * @param path
@@ -1121,7 +1131,7 @@ public class JURI implements Cloneable {
             this.clearQueryParameters()
                     .addQueryParametersMulti(newQuery)
                     .setFragment(newFragment);
-        } else {
+        } else if (newURI.isHavingFragment()) {
             // only fragment:
             // keep old path and query
             this.setFragment(newFragment);
