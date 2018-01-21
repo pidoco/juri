@@ -58,14 +58,14 @@ import java.util.Map;
  * <p>
  * The class doesn't verify the URI until {@link #getCurrentUri()} or any of the
  * methods calling it like {@link #toString()} are called. E.g.
- * 
+ * </p>
+ *
  * <pre>
  *     cut = JURI.parse("http://[::1.1.1.1]")
  *     assertTrue(cut.setPath("dsfd/").isPathRelative());
  *     cut.getCurrentUri(); // fails here
  * </pre>
- * 
- * </p>
+ *
  *
  * <p>
  * This is a mutable class - so it doesn't provide an equals or hashCode
@@ -583,12 +583,12 @@ public class JURI implements Cloneable {
 
     /**
      * <pre>
-     *     "".addRawPath("") -> ""
-     *     "/".addRawPath("") -> "/"
-     *     "".addRawPath("/") -> "/"
-     *     "a".addRawPath("") -> "a/"
-     *     "a".addRawPath("b") -> "a/b"
-     *     "/".addRawPath("/") -> "/"
+     *     "".addRawPath("") -&gt; ""
+     *     "/".addRawPath("") -&gt; "/"
+     *     "".addRawPath("/") -&gt; "/"
+     *     "a".addRawPath("") -&gt; "a/"
+     *     "a".addRawPath("b") -&gt; "a/b"
+     *     "/".addRawPath("/") -&gt; "/"
      * </pre>
      */
     public JURI addRawPath(CharSequence toAdd) {
@@ -599,12 +599,12 @@ public class JURI implements Cloneable {
 
     /**
      * <pre>
-     *     "".addRawPath("") -> ""
-     *     "/".addRawPath("") -> "/"
-     *     "".addRawPath("/") -> "/"
-     *     "a".addRawPath("") -> "a/"
-     *     "a".addRawPath("b") -> "a/b"
-     *     "/".addRawPath("/") -> "/"
+     *     "".addRawPath("") -&gt; ""
+     *     "/".addRawPath("") -&gt; "/"
+     *     "".addRawPath("/") -&gt; "/"
+     *     "a".addRawPath("") -&gt; "a/"
+     *     "a".addRawPath("b") -&gt; "a/b"
+     *     "/".addRawPath("/") -&gt; "/"
      * </pre>
      */
     public static String concatRawPaths(CharSequence left, CharSequence right) {
@@ -655,7 +655,7 @@ public class JURI implements Cloneable {
      * segments if escaped by backslash.
      * 
      * @param completeUnescapedPath
-     *            e.g. //b\/f//kf/ -> //b%XXf//kf/
+     *            e.g. //b\/f//kf/ -&gt; //b%XXf//kf/
      * @return the used string builder.
      */
     public static StringBuilder escapeMultiSegmentPath(String completeUnescapedPath) {
