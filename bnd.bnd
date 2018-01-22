@@ -3,3 +3,7 @@
 Test-Cases: ${classes;CONCRETE;PUBLIC;NAMED;*Test}
 
 Bundle-Description: The JURI library.
+
+Import-Package: \
+	javax.annotation; resolution:=optional; version=0, \
+	*
